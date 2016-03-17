@@ -93,11 +93,16 @@ proc executeEPC(cmd: IdeCmd, args: SexpNode) =
     dirtyfile = args[3].getStr(nil)
   execute(cmd, file, dirtyfile, int(line), int(column))
 
-proc returnEPC(socket: var Socket, uid: BiggestInt, s: SexpNode,
-               return_symbol = "return") =
+proc returnEPC(socket: var Socket, uid: BiggestInt,
+               s: SexpNode|string, return_symbol = "return") =
   let response = $convertSexp([newSSymbol(return_symbol), uid, s])
   socket.send(toHex(len(response), 6))
   socket.send(response)
+
+template sendEpc(results: typed, tdef, hook: untyped) =
+  hook = proc (s: tdef) = results.add(s)
+  executeEPC(cmd, args)
+  returnEPC(client, uid, sexp(results))
 
 template checkSanity(client, sizeHex, size, messageBuffer: typed) =
   if client.recv(sizeHex, 6) != 6:
@@ -133,16 +138,18 @@ proc mainCommand*(data: EpcModeData) =
       messageType = message[0].getSymbol
     case messageType:
     of "call":
-      var results: seq[Suggest] = @[]
-      suggestionResultHook = proc (s: Suggest) =
-        results.add(s)
-
       let
         uid = message[1].getNum
         cmd = parseIdeCmd(message[2].getSymbol)
         args = message[3]
-      executeEPC(cmd, args)
-      returnEPC(client, uid, sexp(results))
+      case cmd
+      of ideChk:
+        var hints_or_errors = ""
+        sendEpc(hints_or_errors, string, msgs.writelnHook)
+      of ideSug, ideCon, ideDef, ideUse, ideDus:
+        var suggests: seq[Suggest] = @[]
+        sendEpc(suggests, Suggest, suggestionResultHook)
+      else: discard
     of "return":
       raise newException(EUnexpectedCommand, "no return expected")
     of "return-error":
