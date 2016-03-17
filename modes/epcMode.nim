@@ -150,14 +150,15 @@ proc mainCommand*(data: EpcModeData) =
         var suggests: seq[Suggest] = @[]
         sendEpc(suggests, Suggest, suggestionResultHook)
       else: discard
-    of "return":
-      raise newException(EUnexpectedCommand, "no return expected")
-    of "return-error":
-      raise newException(EUnexpectedCommand, "no return expected")
+    of "methods":
+      returnEPC(client, message[1].getNum, listEPC())
     of "epc-error":
       stderr.writeline("recieved epc error: " & $messageBuffer)
       raise newException(IOError, "epc error")
-    of "methods":
-      returnEPC(client, message[1].getNum, listEPC())
     else:
-      raise newException(EUnexpectedCommand, "unexpected call: " & messageType)
+      let errMessage = case messageType
+                       of "return", "return-error":
+                         "no return expected"
+                       else:
+                         "unexpected call: " & messageType
+      raise newException(EUnexpectedCommand, errMessage)
