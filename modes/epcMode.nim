@@ -99,6 +99,14 @@ proc returnEPC(socket: var Socket, uid: BiggestInt, s: SexpNode,
   socket.send(toHex(len(response), 6))
   socket.send(response)
 
+template checkSanity(client, sizeHex, size, messageBuffer: typed) =
+  if client.recv(sizeHex, 6) != 6:
+    raise newException(ValueError, "didn't get all the hexbytes")
+  if parseHex(sizeHex, size) == 0:
+    raise newException(ValueError, "invalid size hex: " & $sizeHex)
+  if client.recv(messageBuffer, size) != size:
+    raise newException(ValueError, "didn't get all the bytes")
+
 proc mainCommand*(data: EpcModeData) =
   var
     client = newSocket()
@@ -113,15 +121,13 @@ proc mainCommand*(data: EpcModeData) =
   # Wait for connection
   accept(server, client)
   while true:
-    var sizeHex = ""
-    if client.recv(sizeHex, 6) != 6:
-      raise newException(ValueError, "didn't get all the hexbytes")
-    var size = 0
-    if parseHex(sizeHex, size) == 0:
-      raise newException(ValueError, "invalid size hex: " & $sizeHex)
-    var messageBuffer = ""
-    if client.recv(messageBuffer, size) != size:
-      raise newException(ValueError, "didn't get all the bytes")
+    var
+      sizeHex = ""
+      size = 0
+      messageBuffer = ""
+
+    checkSanity(client, sizeHex, size, messageBuffer)
+
     let
       message = parseSexp($messageBuffer)
       messageType = message[0].getSymbol
