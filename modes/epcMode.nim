@@ -74,7 +74,7 @@ proc listEPC(): SexpNode =
     argspecs = sexp("file line column dirtyfile".split(" ").map(newSSymbol))
     docstring = sexp("line starts at 1, column at 0, dirtyfile is optional")
   result = newSList()
-  for command in ["sug", "con", "def", "use", "dus"]:
+  for command in ["sug", "con", "def", "use", "dus", "chk"]:
     let
       cmd = sexp(command)
       methodDesc = newSList()
