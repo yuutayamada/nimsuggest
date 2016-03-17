@@ -57,7 +57,7 @@ proc sexp(s: IdeCmd): SexpNode = sexp($s)
 proc sexp(s: TSymKind): SexpNode = sexp($s)
 
 proc sexp(s: Suggest): SexpNode =
-  # If you change the oder here, make sure to change it over in
+  # If you change the order here, make sure to change it over in
   # nim-mode.el too.
   result = convertSexp([
     s.section, s.symkind, s.qualifiedPath.map(newSString), s.filePath,
@@ -70,6 +70,8 @@ proc sexp(s: seq[Suggest]): SexpNode =
     result.add(sexp(sug))
 
 proc listEPC(): SexpNode =
+  # This function enables a feature to show description from Emacs by
+  # M-x `epc:controller`.
   let
     argspecs = sexp("file line column dirtyfile".split(" ").map(newSSymbol))
     docstring = sexp("line starts at 1, column at 0, dirtyfile is optional")
@@ -117,7 +119,7 @@ proc mainCommand*(data: EpcModeData) =
     client = newSocket()
     server = newSocket()
 
-   # Setup server socket
+  # Setup server socket
   server.bindaddr(Port(0), data.address)
   let (_, serverPort) = server.getLocalAddr()
   server.listen()
