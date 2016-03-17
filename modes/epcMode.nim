@@ -52,9 +52,7 @@ proc initEpcModeData*(cmdline: CmdLineData): EpcModeData =
 proc echoEpcModeOptions*() =
   echo(epcModeHelpMsg)
 
-proc sexp(s: IdeCmd): SexpNode = sexp($s)
-
-proc sexp(s: TSymKind): SexpNode = sexp($s)
+proc sexp(s: IdeCmd|TSymKind): SexpNode = sexp($s)
 
 proc sexp(s: Suggest): SexpNode =
   # If you change the order here, make sure to change it over in
