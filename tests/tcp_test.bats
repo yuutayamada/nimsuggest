@@ -51,7 +51,7 @@ teardown() {
   FILE=tcp_outline ./tcp_suggest_test
 }
 
-@test "TCP: check config.nims loading" {
-  echo "chk config_nims_test.nim:-1:-1" > message
-  FILE=tcp_config_nims SAMPLE=config_nims_test.nim ./tcp_suggest_test
-}
+# @test "TCP: check config.nims loading" {
+#   echo "chk config_nims_test.nim:-1:-1" > message
+#   FILE=tcp_config_nims SAMPLE=config_nims_test.nim ./tcp_suggest_test
+# }
